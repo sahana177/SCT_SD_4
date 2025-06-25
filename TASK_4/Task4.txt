@@ -1,0 +1,47 @@
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+
+# URL of the e-commerce website
+url = 'https://webscraper.io/test-sites/e-commerce/static/computers/laptops'
+
+# Send a GET request to the website
+response = requests.get(url)
+
+# Parse the HTML content
+soup = BeautifulSoup(response.content, 'html.parser')
+
+# Lists to store product details
+product_names = []
+product_prices = []
+product_ratings = []
+
+# Find all product containers
+products = soup.find_all('div', class_='thumbnail')
+
+# Extract product details
+for product in products:
+    name = product.find('a', class_='title').text
+    price = product.find('h4', class_='price').text
+
+    # Check if rating element exists before accessing text
+    rating_element = product.find('p', class_='ratings')
+    rating = rating_element.text.strip() if rating_element else "N/A" # Assign "N/A" if rating is missing
+
+
+    product_names.append(name)
+    product_prices.append(price)
+    product_ratings.append(rating)
+
+# Create a DataFrame
+data = {
+    'Product Name': product_names,
+    'Price': product_prices,
+    'Rating': product_ratings
+}
+df = pd.DataFrame(data)
+
+# Save the DataFrame to a CSV file
+df.to_csv('customers-100.csv', index=False)
+
+print("Data has been extracted and saved to customers-100.csv")
